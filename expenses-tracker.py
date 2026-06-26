@@ -97,3 +97,6 @@ def create_spend_chart(categories):
 
     return "\n".join(lines)
 
+# add a CLI interface to the expenses tracker
+
+print("__________EXPENSES TRACKER__________")
