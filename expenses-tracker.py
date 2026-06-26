@@ -99,4 +99,11 @@ def create_spend_chart(categories):
 
 # add a CLI interface to the expenses tracker
 
-print("__________EXPENSES TRACKER__________")
+categories = {}
+
+print("____________EXPENSES TRACKER____________")
+print("Welcome to the Expenses Tracker!")
+print("Enter a command to get started. Type 'help' for a list of commands.")
+command = input("> ")
+
+active = True
