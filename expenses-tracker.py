@@ -98,12 +98,50 @@ def create_spend_chart(categories):
     return "\n".join(lines)
 
 # add a CLI interface to the expenses tracker
-
+active = True
 categories = {}
 
 print("____________EXPENSES TRACKER____________")
 print("Welcome to the Expenses Tracker!")
-print("Enter a command to get started. Type 'help' for a list of commands.")
-command = input("> ")
 
-active = True
+while active:
+    print("Enter a command to get started. Type 'help' for a list of commands.")
+    command = input("> ").split()
+    
+    if len(command) == 0:
+        print("No command entered. Type 'help' for a list of commands.")
+        continue
+    
+    elif command[0] == "help":
+        print("Available commands:")
+        print("  create <category_name> - Create a new category")
+        print("  deposit <category_name> <amount> [description] - Deposit money into a category")
+        print("  withdraw <category_name> <amount> [description] - Withdraw money from a category")
+        print("  transfer <from_category> <to_category> <amount> - Transfer money between categories")
+        print("  balance <category_name> - Get the balance of a category")
+        print("  chart - Create a spending chart for all categories")
+        print("  exit - Exit the program")
+
+    elif command[0] == "create":
+        category_name = command[1]
+        categories[category_name] = Category(category_name)
+        print(f"Category '{category_name}' created.")
+
+    elif command[0] == "deposit":
+        category_name = command[1]
+        amount = float(command[2])
+        description = " ".join(command[3:]) if len(command) > 3 else ""
+        if category_name in categories:
+            categories[category_name].deposit(amount, description)
+            print(f"Deposited {amount} into '{category_name}'.")
+        else:
+            print(f"Category '{category_name}' does not exist.") #create category actually
+    
+    elif command[0] == "exit":
+        active = False
+        print("Exiting the Expenses Tracker.")
+    
+    else:
+        print("Invalid command. Type 'help' for a list of commands.")
+
+
