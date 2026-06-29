@@ -100,12 +100,21 @@ def create_spend_chart(categories):
     return "\n".join(lines)
 
 
-def create_category(name):
-    category_name = command[1]
-    categories[category_name] = Category(category_name)
-    print(f"Category '{category_name}' created.")
+def save_categories(categories, filename="categories.json"):
+    data = {name: category.ledger for name, category in categories.items()}
+    with open(filename, "w") as f:
+        json.dump(data, f)
 
-
+def load_categories(filename="categories.json"):
+    try:
+        with open(filename, "r") as f:
+            data = json.load(f)
+        categories = {name: Category(name) for name in data}
+        for name, ledger in data.items():
+            categories[name].ledger = ledger
+        return categories
+    except FileNotFoundError:
+        return {}
 
 
 # add a CLI interface to the expenses tracker
@@ -133,18 +142,25 @@ while active:
         print("  withdraw <category_name> <amount> [description] - Withdraw money from a category")
         print("  transfer <from_category> <to_category> <amount> - Transfer money between categories")
         print("  balance <category_name> - Get the balance of a category")
-        print("  chart <category_name> - Create a spending chart for a category")
+        print("  chart - Create a spending chart for all categories")
         print("  exit - Exit the program")
 
     elif command[0] == "create":
-        category_name = command[1]
-        categories[category_name] = Category(category_name)
-        print(f"Category '{category_name}' created.")
+        try:
+
+            category_name = str(command[1])
+            categories[category_name] = Category(category_name)
+            print(f"Category '{category_name}' created.")
+        except IndexError:
+            print("Please provide a category name. Usage: create <category_name>. Type 'help' for a list of commands.")
 
     elif command[0] == "deposit":
-        category_name = command[1]
-        amount = float(command[2])
-        description = " ".join(command[3:]) if len(command) > 3 else ""
+        try:
+            category_name = str(command[1])
+            amount = float(command[2])
+            description = " ".join(command[3:]) if len(command) > 3 else ""
+        except (IndexError, ValueError):
+            print("Invalid command. Usage: deposit <category_name> <amount> [description]. Type 'help' for a list of commands.")
         if category_name in categories:
             categories[category_name].deposit(amount, description)
             print(f"Deposited {amount} into '{category_name}'.")
@@ -154,13 +170,41 @@ while active:
             categories[category_name].deposit(amount, description)
             print(f"Deposited {amount} into '{category_name}'. As the category did not exist, it has been created.")
 
-    elif command[0] == "chart":
+    elif command[0] == "withdraw":
         category_name = command[1]
+        amount = float(command[2])
+        description = " ".join(command[3:]) if len(command) > 3 else ""
         if category_name in categories:
-            chart = create_spend_chart([categories[category_name]])
-            print(chart)
+            if categories[category_name].withdraw(amount, description):
+                print(f"Withdrew {amount} from '{category_name}'.")
+            else:
+                print(f"Insufficient funds in '{category_name}'.")
         else:
             print(f"Category '{category_name}' does not exist.")
+
+    elif command[0] == "transfer":
+        from_category = command[1]
+        to_category = command[2]
+        amount = float(command[3])
+        if from_category in categories and to_category in categories:
+            if categories[from_category].transfer(amount, categories[to_category]):
+                print(f"Transferred {amount} from '{from_category}' to '{to_category}'.")
+            else:
+                print(f"Insufficient funds in '{from_category}'.")
+        else:
+            print("One or both categories do not exist. Perhaps try creating them first?")
+    
+    elif command[0] == "balance":
+        category = command[1]
+        #continue
+
+    elif command[0] == "chart":
+        try:
+            chart = create_spend_chart(list(categories.values()))
+            print(chart)
+        except:
+            print("Error creating chart. Make sure you have at least one category with expenses.")
+
     
     elif command[0] == "exit":
         active = False
