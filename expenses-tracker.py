@@ -1,3 +1,5 @@
+import json
+
 class Category:
     def __init__(self, name):
         self.name = name
@@ -97,6 +99,15 @@ def create_spend_chart(categories):
 
     return "\n".join(lines)
 
+
+def create_category(name):
+    category_name = command[1]
+    categories[category_name] = Category(category_name)
+    print(f"Category '{category_name}' created.")
+
+
+
+
 # add a CLI interface to the expenses tracker
 active = True
 categories = {}
@@ -104,7 +115,10 @@ categories = {}
 print("____________EXPENSES TRACKER____________")
 print("Welcome to the Expenses Tracker!")
 
+
+
 while active:
+
     print("Enter a command to get started. Type 'help' for a list of commands.")
     command = input("> ").split()
     
@@ -119,7 +133,7 @@ while active:
         print("  withdraw <category_name> <amount> [description] - Withdraw money from a category")
         print("  transfer <from_category> <to_category> <amount> - Transfer money between categories")
         print("  balance <category_name> - Get the balance of a category")
-        print("  chart - Create a spending chart for all categories")
+        print("  chart <category_name> - Create a spending chart for a category")
         print("  exit - Exit the program")
 
     elif command[0] == "create":
@@ -135,11 +149,22 @@ while active:
             categories[category_name].deposit(amount, description)
             print(f"Deposited {amount} into '{category_name}'.")
         else:
-            print(f"Category '{category_name}' does not exist.") #create category actually
+            #create category actually
+            categories[category_name] = Category(category_name)
+            categories[category_name].deposit(amount, description)
+            print(f"Deposited {amount} into '{category_name}'. As the category did not exist, it has been created.")
+
+    elif command[0] == "chart":
+        category_name = command[1]
+        if category_name in categories:
+            chart = create_spend_chart([categories[category_name]])
+            print(chart)
+        else:
+            print(f"Category '{category_name}' does not exist.")
     
     elif command[0] == "exit":
         active = False
-        print("Exiting the Expenses Tracker.")
+        print("Exiting the Expenses Tracker.\n")
     
     else:
         print("Invalid command. Type 'help' for a list of commands.")
